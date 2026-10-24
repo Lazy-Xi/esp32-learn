@@ -1,0 +1,39 @@
+{
+  "files.encoding": "utf8",
+
+  "idf.currentSetup": "C:\\esp\\v6.1\\esp-idf",
+  "idf.buildPath": "build",
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32c5",
+    "PYTHONUTF8": "1",
+    "VIRTUAL_ENV_DISABLE_PROMPT": "1"
+  },
+  "idf.openOcdConfigs": ["board/esp32c5-builtin.cfg"],
+  "idf.port": "COM4",
+  "idf.flashType": "UART",
+
+  "cmake.configureOnOpen": false,
+  "cmake.configureOnEdit": false,
+  "cmake.automaticReconfigure": false,
+  "cmake.generator": "Ninja",
+  "cmake.cmakePath": "C:\\Espressif\\tools\\cmake\\4.0.3\\bin\\cmake.exe",
+
+  "clangd.path": "C:\\Espressif\\tools\\esp-clangd\\esp-21.1.3_20260408\\esp-clangd\\bin\\clangd.exe",
+  "clangd.arguments": [
+    "--background-index",
+    "--compile-commands-dir=${workspaceFolder}/build",
+    "--resource-dir=C:/Espressif/tools/esp-clang/esp-21.1.3_20260408/esp-clang/lib/clang/21",
+    "--query-driver=C:/Espressif/tools/riscv32-esp-elf/esp-15.2.0_20251204/riscv32-esp-elf/bin/riscv32-esp-elf-*.exe"
+  ],
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "[cpp]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+  },
+  "terminal.integrated.profiles.windows": {
+    "ESP-IDF PowerShell": {
+      "source": "PowerShell",
+      "args": ["-NoLogo", "-NoExit", "-File", "C:\\Espressif\\tools\\Microsoft.v6.1.PowerShell_profile.ps1"]
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "ESP-IDF PowerShell"
+}

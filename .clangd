@@ -1,0 +1,5 @@
+CompileFlags:
+  CompilationDatabase: build
+  # GCC-only options that Espressif clangd does not understand.
+  Remove: [-fno-shrink-wrap, -fstrict-volatile-bitfields, -fno-tree-switch-conversion, -fzero-init-padding-bits=*, -fno-malloc-dce, -mtune=*]
+  Add: [-resource-dir=C:/Espressif/tools/esp-clang/esp-21.1.3_20260408/esp-clang/lib/clang/21]
