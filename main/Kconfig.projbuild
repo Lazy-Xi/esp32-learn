@@ -1,69 +1,33 @@
-menu "Example Configuration"
+menu "WiFi and 4 Relays"
 
-    config ESP_WIFI_SSID
-        string "WiFi SSID"
-        default "myssid"
-        help
-            SSID (network name) for the example to connect to.
+config RELAY_WIFI_SSID
+    string "WiFi SSID"
+    default "your-wifi-name"
 
-    config ESP_WIFI_PASSWORD
-        string "WiFi Password"
-        default "mypassword"
-        help
-            WiFi password (WPA or WPA2) for the example to use.
+config RELAY_WIFI_PASSWORD
+    string "WiFi password (WPA2/WPA3 Personal)"
+    default "change-me-123"
 
-    choice ESP_WIFI_SAE_MODE
-        prompt "WPA3 SAE mode selection"
-        default ESP_STATION_EXAMPLE_WPA3_SAE_PWE_BOTH
-        help
-            Select mode for SAE as Hunt and Peck, H2E or both.
-        config ESP_STATION_EXAMPLE_WPA3_SAE_PWE_HUNT_AND_PECK
-            bool "HUNT AND PECK"
-        config ESP_STATION_EXAMPLE_WPA3_SAE_PWE_HASH_TO_ELEMENT
-            bool "H2E"
-            depends on ESP_WIFI_ENABLE_SAE_H2E
-        config ESP_STATION_EXAMPLE_WPA3_SAE_PWE_BOTH
-            bool "BOTH"
-            depends on ESP_WIFI_ENABLE_SAE_H2E
-    endchoice
+config RELAY_ACTIVE_LOW
+    bool "Relay inputs are active-low"
+    default y
+    help
+        Enable for LOW=ON modules. Disable for HIGH=ON modules.
+        Configure all four module channels for the same polarity.
 
-    config ESP_WIFI_PW_ID
-        string "PASSWORD IDENTIFIER"
-        depends on  ESP_STATION_EXAMPLE_WPA3_SAE_PWE_HASH_TO_ELEMENT|| ESP_STATION_EXAMPLE_WPA3_SAE_PWE_BOTH
-        default ""
-        help
-            password identifier for SAE H2E
+config RELAY_HTTP_ENABLED
+    bool "Enable relay HTTP control page and API"
+    default y
+    help
+        Serve the control page on port 80 after WiFi gets an IP address.
+        Devices on the network can control relays without authentication.
 
-    config ESP_MAXIMUM_RETRY
-        int "Maximum retry"
-        default 5
-        help
-            Set the Maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.
-
-    choice ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD
-        prompt "WiFi Scan auth mode threshold"
-        default ESP_WIFI_AUTH_WPA2_PSK
-        help
-            The weakest authmode to accept in the scan mode.
-            This value defaults to ESP_WIFI_AUTH_WPA2_PSK in case password is present and ESP_WIFI_AUTH_OPEN is used.
-            Please select ESP_WIFI_AUTH_WEP/ESP_WIFI_AUTH_WPA_PSK in case AP is operating in WEP/WPA mode.
-
-        config ESP_WIFI_AUTH_OPEN
-            bool "OPEN"
-        config ESP_WIFI_AUTH_WEP
-            bool "WEP"
-        config ESP_WIFI_AUTH_WPA_PSK
-            bool "WPA PSK"
-        config ESP_WIFI_AUTH_WPA2_PSK
-            bool "WPA2 PSK"
-        config ESP_WIFI_AUTH_WPA_WPA2_PSK
-            bool "WPA/WPA2 PSK"
-        config ESP_WIFI_AUTH_WPA3_PSK
-            bool "WPA3 PSK"
-        config ESP_WIFI_AUTH_WPA2_WPA3_PSK
-            bool "WPA2/WPA3 PSK"
-        config ESP_WIFI_AUTH_WAPI_PSK
-            bool "WAPI PSK"
-    endchoice
+config RELAY_RUN_DEMO
+    bool "Run automatic relay sequence after WiFi connects"
+    depends on !RELAY_HTTP_ENABLED
+    default n
+    help
+        Energizes channels 1, 2, 3, 4 one at a time for 2 seconds.
+        Use only with unloaded contacts or safe low-voltage test loads.
 
 endmenu

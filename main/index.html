@@ -1,24 +1,121 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ESP32 网页</title>
+  <title>四路继电器控制</title>
   <style>
-    body { margin: 0; padding: 24px; background: #f1f5f9; color: #0f172a;
-           font-family: system-ui, sans-serif; }
-    main { max-width: 560px; margin: 12vh auto; padding: 32px;
-           background: white; border-radius: 16px; }
-    h1 { margin-top: 0; }
-    p { line-height: 1.8; }
-    code { padding: 3px 6px; background: #e2e8f0; border-radius: 4px; }
+    :root { font-family: system-ui, sans-serif; color: #172b36; background: #edf3f4; }
+    body { margin: 0; padding: 36px 18px; }
+    main { max-width: 720px; margin: auto; }
+    h1 { margin-bottom: 8px; font-size: 28px; }
+    p { color: #536570; line-height: 1.6; }
+    #status { min-height: 26px; }
+    #relays { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    article { background: white; padding: 22px; border-radius: 16px; border: 1px solid #dae4e7; }
+    article.on { border-color: #1c8975; background: #f3fffa; }
+    h2 { font-size: 19px; margin: 0 0 6px; }
+    .state { display: block; font-weight: 650; margin: 18px 0; }
+    button { border: 0; border-radius: 8px; padding: 11px 17px; font: inherit;
+      background: #116b5b; color: white; cursor: pointer; }
+    button.off { background: #e8eef0; color: #243d48; }
+    button:disabled { cursor: wait; opacity: .45; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    footer { display: flex; gap: 12px; align-items: center; margin-top: 20px; }
+    footer button { background: #923f37; }
+    small { color: #536570; }
+    @media (max-width: 460px) { #relays { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <main>
-    <h1>你好，ESP32！</h1>
-    <p>Wi-Fi 已连接，HTTP 服务正在运行。</p>
-    <p>这是 ESP32 返回的 HTML 页面。修改 <code>main/index.html</code> 后，重新编译并烧录即可更新内容。</p>
-  </main>
+<main>
+  <h1>四路继电器</h1>
+  <p>选择对应通道，控制吸合或释放。</p>
+  <p id="status" role="status" aria-live="polite">正在连接设备…</p>
+  <section id="relays" aria-label="继电器通道"></section>
+  <footer><button id="all-off" disabled>全部关闭</button><button id="refresh" class="off">刷新状态</button></footer>
+  <p><small>显示的是设备记录的控制状态，触点实际通断需现场确认。</small></p>
+</main>
+<script>
+  const status = document.querySelector('#status');
+  const cards = document.querySelector('#relays');
+  const allOff = document.querySelector('#all-off');
+  const refresh = document.querySelector('#refresh');
+  let busy = false;
+  let connected = false;
+
+  for (let id = 1; id <= 4; id++) {
+    const card = document.createElement('article');
+    card.id = `relay-${id}`;
+    card.innerHTML = `<h2>继电器 ${id}</h2><small class="gpio">GPIO —</small>
+      <span class="state">状态未知</span><div class="actions">
+      <button data-id="${id}" data-on="true" disabled>开启</button>
+      <button data-id="${id}" data-on="false" class="off" disabled>关闭</button></div>`;
+    cards.append(card);
+  }
+
+  function controls() {
+    cards.querySelectorAll('button').forEach(button => { button.disabled = busy || !connected; });
+    allOff.disabled = busy || !connected;
+    refresh.disabled = busy;
+  }
+
+  function render(data) {
+    if (!data || typeof data.online !== 'boolean' || !Array.isArray(data.relays) ||
+        data.relays.length !== 4 || !data.relays.every((relay, index) =>
+          relay.id === index + 1 && Number.isInteger(relay.gpio) && typeof relay.on === 'boolean')) {
+      throw new Error('设备返回的状态格式不正确');
+    }
+    connected = data.online;
+    for (const relay of data.relays) {
+      const card = document.querySelector(`#relay-${relay.id}`);
+      card.querySelector('.gpio').textContent = `GPIO ${relay.gpio}`;
+      card.classList.toggle('on', relay.on);
+      card.querySelector('.state').textContent = relay.on ? '已开启 · 吸合' : '已关闭 · 释放';
+    }
+    status.textContent = connected ? '设备已连接' : 'Wi-Fi 已断开，设备已请求关闭所有通道';
+  }
+
+  async function request(path = '/api/relays', options = {}) {
+    if (busy) return;
+    busy = true;
+    controls();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(path, { cache: 'no-store', ...options, signal: controller.signal });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+      render(data);
+    } catch (error) {
+      connected = false;
+      status.textContent = error.name === 'AbortError' ? '请求超时，请检查网络后刷新' : `请求失败：${error.message}`;
+      cards.querySelectorAll('article').forEach(card => {
+        card.classList.remove('on');
+        card.querySelector('.state').textContent = '状态未知';
+      });
+    } finally {
+      clearTimeout(timeout);
+      busy = false;
+      controls();
+    }
+  }
+
+  cards.addEventListener('click', event => {
+    const button = event.target.closest('button[data-id]');
+    if (!button || button.disabled) return;
+    request(`/api/relays/${button.dataset.id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ on: button.dataset.on === 'true' })
+    });
+  });
+  allOff.addEventListener('click', () => request('/api/relays/all-off', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }
+  }));
+  refresh.addEventListener('click', () => request());
+  // 打开网页先同步真实控制状态，随后每 3 秒同步其他客户端的修改。
+  request();
+  setInterval(() => { if (!document.hidden) request(); }, 3000);
+</script>
 </body>
 </html>
