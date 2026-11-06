@@ -9,7 +9,6 @@
     "VIRTUAL_ENV_DISABLE_PROMPT": "1"
   },
   "idf.openOcdConfigs": ["board/esp32c5-builtin.cfg"],
-  "idf.port": "COM4",
   "idf.flashType": "UART",
 
   "cmake.configureOnOpen": false,
@@ -27,7 +26,10 @@
   ],
   "C_Cpp.intelliSenseEngine": "disabled",
   "[cpp]": {
-    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
   },
   "terminal.integrated.profiles.windows": {
     "ESP-IDF PowerShell": {
