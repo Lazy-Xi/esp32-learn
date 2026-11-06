@@ -1,7 +1,19 @@
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
+
 idf_component_register(
-    SRCS "main.cpp" "relay_controller.cpp" "relay_http_server.cpp"
-    INCLUDE_DIRS "."
-    PRIV_REQUIRES esp_driver_gpio esp_wifi esp_netif esp_event nvs_flash esp_http_server espressif__cjson pthread
+    SRCS ${SOURCES}
+    INCLUDE_DIRS "include"
+    PRIV_REQUIRES
+        esp_driver_gpio
+        esp_wifi
+        esp_netif
+        esp_event
+        nvs_flash
+        esp_http_server
+        espressif__cjson
+        pthread
     EMBED_TXTFILES "index.html"
 )
 
