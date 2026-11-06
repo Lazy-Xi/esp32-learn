@@ -12,6 +12,7 @@
 #include "relay_controller.hpp"
 #include "relay_http_server.hpp"
 #include "sdkconfig.h"
+#include "storage/filesystem.hpp"
 
 namespace {
 
@@ -135,6 +136,8 @@ bool wait_while_online(unsigned milliseconds) {
 } // namespace
 
 extern "C" void app_main() {
+    ESP_ERROR_CHECK(filesystem_init());
+
     // 继电器先关闭，再初始化联网；连接失败不会阻塞关闭操作。
     ESP_ERROR_CHECK(relays.init());
     ESP_LOGI(kTag, "All relays OFF; active-low=%d", kActiveLow ? 1 : 0);

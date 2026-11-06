@@ -1,3 +1,4 @@
 dependencies:
-  idf: ">=6.1"
-  espressif/cjson: "^1.7.19"
+  idf: '>=6.1'
+  espressif/cjson: ^1.7.19
+  joltwallet/littlefs: '*'
