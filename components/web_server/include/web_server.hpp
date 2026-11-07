@@ -1,80 +1,103 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "esp_err.h"
 #include "esp_http_server.h"
 
-// ============================================================
-// 业务回调接口
-// ============================================================
+#include "http_request.hpp"
+#include "http_response.hpp"
 
-struct RelayApi {
+struct WebServerConfig {
+    uint16_t port = 80;
+    uint16_t max_open_sockets = 4;
+    uint16_t max_uri_handlers = 1;
+    uint32_t stack_size = 6144;
+    size_t max_request_size = 2048;
 
-    using GetStateCallback = esp_err_t (*)(
-        void *context, uint8_t id, bool *state);
-
-    using SetStateCallback = esp_err_t (*)(
-        void *context, uint8_t id, bool state);
-
-    uint8_t count = 0;
-
-    GetStateCallback get_state = nullptr;
-
-    SetStateCallback set_state = nullptr;
-
-    void *context = nullptr;
+    bool lru_purge_enable = true;
 };
 
-// ============================================================
-// WebServer
-// ============================================================
+struct StaticFilesConfig {
+    std::string index_file;
+    std::string cache_control = "public, max-age=3600";
+    bool spa_fallback = false;
+
+    StaticFilesConfig() : index_file("index.html") {}
+};
 
 class WebServer {
 public:
-    WebServer() = default;
+    // Lambda Handler
+    using Handler = std::function<HttpResponse(const HttpRequest &req)>;
 
-    ~WebServer() = default;
+    explicit WebServer(const WebServerConfig &config = {});
+
+    ~WebServer();
 
     WebServer(const WebServer &) = delete;
-
     WebServer &operator=(const WebServer &) = delete;
 
-    // 启动服务
-    esp_err_t start(const RelayApi &api);
+    esp_err_t route(const char *uri, httpd_method_t method, Handler handler);
 
-    // 停止服务
+    esp_err_t get(const char *uri, Handler handler);
+    esp_err_t post(const char *uri, Handler handler);
+    esp_err_t put(const char *uri, Handler handler);
+    esp_err_t del(const char *uri, Handler handler);
+
+    esp_err_t start();
     esp_err_t stop();
 
-    // 服务状态
-    bool is_running() const;
+    bool is_running() const noexcept;
+    size_t route_count() const noexcept;
+    httpd_handle_t handle() const noexcept;
 
-    // 获取底层句柄
-    httpd_handle_t handle() const;
-
-private:
-    // API
-    static esp_err_t get_relays(httpd_req_t *req);
-
-    static esp_err_t put_relay(httpd_req_t *req);
-
-    static esp_err_t all_off(httpd_req_t *req);
-
-    // 注册路由
-    esp_err_t register_routes();
-
-    // JSON 请求
-    static esp_err_t read_json(httpd_req_t *req, char **buffer);
-
-    // JSON 响应
-    static esp_err_t send_json(httpd_req_t *req, const char *json);
-
-    // 错误响应
-    static esp_err_t send_error(
-        httpd_req_t *req, int status, const char *message);
+    esp_err_t static_files(const char *url_prefix, const char *filesystem_root,
+        const StaticFilesConfig &options = {});
 
 private:
-    httpd_handle_t server_ = nullptr;
+    struct PathPart {
+        std::string value;
+        bool parameter = false;
+        bool tail = false;
+    };
 
-    RelayApi relay_api_ {};
+    struct RouteEntry {
+        std::string pattern;
+        httpd_method_t method = HTTP_GET;
+        Handler handler;
+        std::vector<PathPart> parts;
+        size_t static_count = 0;
+    };
+
+    static bool parse_pattern(
+        const char *uri, std::vector<PathPart> &parts, size_t &static_count);
+
+    static bool split_request_path(
+        const char *uri, std::vector<std::string> &parts);
+
+    static bool decode_segment(const std::string &input, std::string &output);
+
+    static bool match_route(const RouteEntry &route,
+        const std::vector<std::string> &path,
+        std::vector<std::pair<std::string, std::string>> &params);
+
+    static esp_err_t dispatch(httpd_req_t *req);
+    esp_err_t dispatch_request(httpd_req_t *req);
+
+private:
+    WebServerConfig m_config;
+
+    httpd_handle_t m_server = nullptr;
+
+    // 全部业务路由
+    std::vector<RouteEntry> m_routes;
+
+    // 底层统一入口
+    httpd_uri_t m_catch_all_uri {};
 };

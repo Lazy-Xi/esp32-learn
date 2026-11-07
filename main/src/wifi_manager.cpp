@@ -24,10 +24,7 @@ EventGroupHandle_t wifi_events = nullptr;
 // 仅由默认事件循环任务访问
 unsigned retries = 0;
 
-// ============================================================
 // Wi-Fi 事件处理
-// ============================================================
-
 void wifi_event(void *arg, esp_event_base_t base, std::int32_t id, void *data) {
     (void) arg;
 
@@ -99,10 +96,7 @@ void wifi_event(void *arg, esp_event_base_t base, std::int32_t id, void *data) {
     }
 }
 
-// ============================================================
 // NVS 初始化
-// ============================================================
-
 esp_err_t init_nvs() {
     esp_err_t err = nvs_flash_init();
 
@@ -123,10 +117,7 @@ esp_err_t init_nvs() {
     return err;
 }
 
-// ============================================================
 // STA 配置
-// ============================================================
-
 esp_err_t configure_sta() {
     constexpr char ssid[] = CONFIG_WIFI_SSID;
     constexpr char password[] = CONFIG_WIFI_PASSWORD;
@@ -159,10 +150,7 @@ esp_err_t configure_sta() {
 
 } // namespace
 
-// ============================================================
 // 初始化
-// ============================================================
-
 esp_err_t init() {
     if (wifi_events != nullptr) {
         return ESP_ERR_INVALID_STATE;
@@ -234,10 +222,7 @@ esp_err_t init() {
     return ESP_OK;
 }
 
-// ============================================================
 // 等待联网
-// ============================================================
-
 EventBits_t wait() {
     if (wifi_events == nullptr) {
         return kFailed;
@@ -247,10 +232,7 @@ EventBits_t wait() {
         wifi_events, kOnline | kFailed, pdFALSE, pdFALSE, portMAX_DELAY);
 }
 
-// ============================================================
 // 在线状态
-// ============================================================
-
 bool is_online() {
     if (wifi_events == nullptr) {
         return false;

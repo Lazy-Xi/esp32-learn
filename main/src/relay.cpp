@@ -30,10 +30,7 @@ bool relay_states[kRelayCount] {};
 
 namespace Relay {
 
-// ============================================================
 // 初始化
-// ============================================================
-
 esp_err_t init() {
     for (uint8_t i = 0; i < kRelayCount; ++i) {
 
@@ -58,16 +55,10 @@ esp_err_t init() {
     return ESP_OK;
 }
 
-// ============================================================
 // 数量
-// ============================================================
-
 uint8_t count() { return kRelayCount; }
 
-// ============================================================
 // 获取状态
-// ============================================================
-
 esp_err_t get_state(uint8_t id, bool *state) {
     if (id >= kRelayCount || state == nullptr) {
         return ESP_ERR_INVALID_ARG;
@@ -78,10 +69,7 @@ esp_err_t get_state(uint8_t id, bool *state) {
     return ESP_OK;
 }
 
-// ============================================================
 // 设置状态
-// ============================================================
-
 esp_err_t set_state(uint8_t id, bool state) {
     if (id >= kRelayCount) {
         return ESP_ERR_INVALID_ARG;
@@ -100,10 +88,7 @@ esp_err_t set_state(uint8_t id, bool state) {
     return ESP_OK;
 }
 
-// ============================================================
 // 全部关闭
-// ============================================================
-
 esp_err_t all_off() {
     for (uint8_t i = 0; i < kRelayCount; ++i) {
 

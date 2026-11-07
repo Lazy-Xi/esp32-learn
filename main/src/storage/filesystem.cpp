@@ -7,7 +7,6 @@ static const char *TAG = "filesystem";
 
 esp_err_t filesystem_init() {
     esp_vfs_littlefs_conf_t conf {};
-
     conf.base_path = "/littlefs";
     conf.partition_label = "littlefs";
     conf.format_if_mount_failed = false;

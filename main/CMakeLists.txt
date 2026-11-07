@@ -4,6 +4,7 @@ file(GLOB_RECURSE MAIN_SOURCES CONFIGURE_DEPENDS
 
 # 创建 main 组件
 add_library(${COMPONENT_TARGET} STATIC
+    main.cpp
     ${MAIN_SOURCES}
 )
 
@@ -41,13 +42,6 @@ if(CONFIG_WEB_SERVER_ENABLED)
     target_link_libraries(${COMPONENT_TARGET}
         PRIVATE
             idf::web_server
-    )
-
-    # 生成前端文件系统镜像
-    littlefs_create_partition_image(
-        littlefs
-        "${WEB_DIST_DIR}"
-        FLASH_IN_PROJECT
     )
 else()
     message(STATUS "HTTP disabled: web_server will not be included")
