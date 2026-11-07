@@ -11,6 +11,7 @@
   "idf.openOcdConfigs": ["board/esp32c5-builtin.cfg"],
   "idf.flashType": "UART",
   "idf.port": "COM4",
+  "idf.extensionActivationMode": "always",
 
   "cmake.configureOnOpen": false,
   "cmake.configureOnEdit": false,
@@ -25,7 +26,6 @@
     "--resource-dir=C:/Espressif/tools/esp-clang/esp-21.1.3_20260408/esp-clang/lib/clang/21",
     "--query-driver=C:/Espressif/tools/riscv32-esp-elf/esp-15.2.0_20251204/riscv32-esp-elf/bin/riscv32-esp-elf-*.exe"
   ],
-  "C_Cpp.intelliSenseEngine": "disabled",
   "[cpp]": {
     "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
     "editor.tabSize": 4,

@@ -6,5 +6,6 @@ CompileFlags:
     - -fno-tree-switch-conversion
     - -fzero-init-padding-bits=all
     - -fno-malloc-dce
+    - -mtune=esp-base
   Add:
     - -resource-dir=C:/Espressif/tools/esp-clang/esp-21.1.3_20260408/esp-clang/lib/clang/21
