@@ -1,33 +1,55 @@
-menu "WiFi and 4 Relays"
+menu "Chemecar Configuration"
 
-config RELAY_WIFI_SSID
-    string "WiFi SSID"
-    default "your-wifi-name"
+    menu "WiFi Configuration"
 
-config RELAY_WIFI_PASSWORD
-    string "WiFi password (WPA2/WPA3 Personal)"
-    default "change-me-123"
+        config WIFI_SSID
+            string "WiFi SSID"
+            default "Your-WiFi"
+            help
+                WiFi network SSID.
 
-config RELAY_ACTIVE_LOW
-    bool "Relay inputs are active-low"
-    default y
-    help
-        Enable for LOW=ON modules. Disable for HIGH=ON modules.
-        Configure all four module channels for the same polarity.
+        config WIFI_PASSWORD
+            string "WiFi Password"
+            default "Your-Password"
+            help
+                WiFi WPA2 password. Must be 8-63 bytes.
 
-config RELAY_HTTP_ENABLED
-    bool "Enable relay HTTP control page and API"
-    default y
-    help
-        Serve the control page on port 80 after WiFi gets an IP address.
-        Devices on the network can control relays without authentication.
+    endmenu
 
-config RELAY_RUN_DEMO
-    bool "Run automatic relay sequence after WiFi connects"
-    depends on !RELAY_HTTP_ENABLED
-    default n
-    help
-        Energizes channels 1, 2, 3, 4 one at a time for 2 seconds.
-        Use only with unloaded contacts or safe low-voltage test loads.
+    menu "Relay Configuration"
+
+        config RELAY_COUNT
+            int "Number of Relays"
+            range 1 4
+
+        config RELAY_GPIO_0
+            int "Relay 0 GPIO"
+            range 0 27
+
+        config RELAY_GPIO_1
+            int "Relay 1 GPIO"
+            range 0 27
+
+        config RELAY_GPIO_2
+            int "Relay 2 GPIO"
+            range 0 27
+
+        config RELAY_GPIO_3
+            int "Relay 3 GPIO"
+            range 0 27
+
+        config RELAY_ACTIVE_LOW
+            bool "Relay Active Low"
+            default y
+
+    endmenu
+
+    menu "Web Server Configuration"
+
+        config WEB_SERVER_ENABLED
+            bool "Enable Web Server"
+            default y
+
+    endmenu
 
 endmenu

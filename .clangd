@@ -4,5 +4,7 @@ CompileFlags:
     - -fno-shrink-wrap
     - -fstrict-volatile-bitfields
     - -fno-tree-switch-conversion
+    - -fzero-init-padding-bits=all
+    - -fno-malloc-dce
   Add:
     - -resource-dir=C:/Espressif/tools/esp-clang/esp-21.1.3_20260408/esp-clang/lib/clang/21

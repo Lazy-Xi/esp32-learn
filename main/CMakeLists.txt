@@ -1,31 +1,60 @@
-set(WEB_DIST_DIR "$ENV{WEB_DIST_DIR}")
-
-file(GLOB_RECURSE SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+file(GLOB_RECURSE MAIN_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp"
 )
 
-idf_component_register(
-    SRCS ${SOURCES}
-    INCLUDE_DIRS "include"
-    PRIV_REQUIRES
-        esp_driver_gpio
-        esp_wifi
-        esp_netif
-        esp_event
-        nvs_flash
-        esp_http_server
-        espressif__cjson
-        pthread
+# 创建 main 组件
+add_library(${COMPONENT_TARGET} STATIC
+    ${MAIN_SOURCES}
 )
 
-set_target_properties(${COMPONENT_LIB} PROPERTIES
+# 导出头文件目录
+target_include_directories(${COMPONENT_TARGET}
+    PUBLIC
+        "${CMAKE_CURRENT_LIST_DIR}/include"
+)
+
+set(MAIN_COMPONENTS
+    driver
+    esp_driver_gpio
+    esp_wifi
+    esp_event
+    esp_netif
+    joltwallet__littlefs
+    nvs_flash
+)
+
+foreach(component IN LISTS MAIN_COMPONENTS)
+    idf_component_include(${component})
+    target_link_libraries(${COMPONENT_TARGET}
+        PRIVATE
+            idf::${component}
+    )
+endforeach()
+
+if(CONFIG_WEB_SERVER_ENABLED)
+    message(STATUS "HTTP enabled: including web_server")
+
+    # 引入 Web Server 组件
+    idf_component_include(web_server)
+
+    # 建立组件链接关系
+    target_link_libraries(${COMPONENT_TARGET}
+        PRIVATE
+            idf::web_server
+    )
+
+    # 生成前端文件系统镜像
+    littlefs_create_partition_image(
+        littlefs
+        "${WEB_DIST_DIR}"
+        FLASH_IN_PROJECT
+    )
+else()
+    message(STATUS "HTTP disabled: web_server will not be included")
+endif()
+
+set_target_properties(${COMPONENT_TARGET} PROPERTIES
     CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS YES
-)
-
-littlefs_create_partition_image(
-    littlefs
-    "${WEB_DIST_DIR}"
-    FLASH_IN_PROJECT
 )

@@ -1,0 +1,18 @@
+menu "Web Server Configuration"
+
+    config WEB_SERVER_PORT
+        int "HTTP Server Port"
+        range 1 65535
+        default 80
+
+    config WEB_SERVER_MAX_CONNECTIONS
+        int "Maximum Connections"
+        range 1 16
+        default 7
+
+    config WEB_SERVER_MAX_REQUEST_SIZE
+        int "Maximum Request Body Size"
+        range 128 4096
+        default 1024
+
+endmenu
